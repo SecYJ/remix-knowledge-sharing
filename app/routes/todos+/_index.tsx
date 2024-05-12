@@ -1,6 +1,7 @@
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useActionData, useLoaderData } from "@remix-run/react";
 import axios from "axios";
+import { min, required } from "~/validation/validate";
 
 const url = "http://localhost:3000/todos";
 
@@ -28,19 +29,39 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		const { id } = Object.fromEntries(formData);
 		await axios.delete(`${url}/${id}`);
 
-		return null;
+		return;
 	}
 
+	const errors: Record<string, string[]> = {
+		firstName: [],
+		lastName: [],
+	};
+
 	if (intent === "add") {
-		await axios.post(url, {
-			firstName,
-			lastName,
-		});
+		// NOTE: firstName validation
+		!required(String(firstName)) && errors.firstName.push("First name is required");
+		!min(String(firstName), 3) && errors.firstName.push("Min Length is 3 characters long");
+
+		// NOTE: lastName validation
+		!required(String(lastName)) && errors.lastName.push("Last name is required");
+		!min(String(lastName), 3) && errors.lastName.push("Min Length is 3 characters long");
+
+		if (Object.values(errors).length === 0) {
+			await axios.post(url, {
+				firstName,
+				lastName,
+			});
+
+			return;
+		}
 	}
+
+	return json(errors);
 };
 
 const TodoPage = () => {
 	const data = useLoaderData<typeof loader>();
+	const errors = useActionData<typeof action>();
 
 	return (
 		<div className="p-10">
@@ -59,7 +80,15 @@ const TodoPage = () => {
 						placeholder="First Name"
 						className="border border-black p-1"
 						required
+						minLength={3}
 					/>
+					{/* {errors &&
+						errors.firstName.length > 0 &&
+						errors.firstName.map((error) => (
+							<p key={error} className="text-red-600">
+								{error}
+							</p>
+						))} */}
 				</div>
 				<div>
 					<input
@@ -68,7 +97,15 @@ const TodoPage = () => {
 						name="lastName"
 						className="border border-black p-1"
 						required
+						minLength={3}
 					/>
+					{/* {errors &&
+						errors.lastName.length > 0 &&
+						errors.lastName.map((error) => (
+							<p key={error} className="text-red-600">
+								{error}
+							</p>
+						))} */}
 				</div>
 				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
 					Add user
