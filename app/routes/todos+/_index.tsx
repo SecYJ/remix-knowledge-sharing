@@ -50,19 +50,10 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 const TodoPage = () => {
 	const data = useLoaderData<typeof loader>();
 	const navigation = useNavigation();
-	const firstNameRef = useRef<HTMLInputElement>(null);
-	const lastNameRef = useRef<HTMLInputElement>(null);
 	const formEl = useRef<HTMLFormElement>(null);
 
 	useEffect(() => {
 		if (navigation.state !== "submitting") return;
-		// if (firstNameRef && firstNameRef.current) {
-
-		//     firstNameRef.current.value = "";
-		// }
-
-		// if ()
-		// lastNameRef?.current?.value = "";
 		formEl && formEl.current?.reset();
 	}, [navigation.state]);
 
@@ -70,13 +61,6 @@ const TodoPage = () => {
 		<div className="p-10">
 			<ol className="pl-4 space-y-2">
 				{data.map((user, index) => (
-					// <TodoItem
-					// 	key={user._id}
-					// 	firstName={user.firstName}
-					// 	lastName={user.lastName}
-					// 	index={index + 1}
-					// 	_id={user._id}
-					// />
 					<li
 						className={cn(
 							"flex gap-1",
@@ -95,20 +79,8 @@ const TodoPage = () => {
 				))}
 			</ol>
 			<Form method="POST" className="flex gap-3 mt-3" ref={formEl}>
-				<input
-					type="text"
-					name="firstName"
-					placeholder="First Name"
-					className="border border-black p-1"
-					ref={firstNameRef}
-				/>
-				<input
-					type="text"
-					placeholder="Last Name"
-					name="lastName"
-					className="border border-black p-1"
-					ref={lastNameRef}
-				/>
+				<input type="text" name="firstName" placeholder="First Name" className="border border-black p-1" />
+				<input type="text" placeholder="Last Name" name="lastName" className="border border-black p-1" />
 				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
 					Add user
 				</button>
