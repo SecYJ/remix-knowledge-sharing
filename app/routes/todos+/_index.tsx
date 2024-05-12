@@ -29,7 +29,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		const { id } = Object.fromEntries(formData);
 		await axios.delete(`${url}/${id}`);
 
-		return;
+		return null;
 	}
 
 	const errors: Record<string, string[]> = {
@@ -46,13 +46,13 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		!required(String(lastName)) && errors.lastName.push("Last name is required");
 		!min(String(lastName), 3) && errors.lastName.push("Min Length is 3 characters long");
 
-		if (Object.values(errors).length === 0) {
+		if (!Object.values(errors).some((field) => field.length > 0)) {
 			await axios.post(url, {
 				firstName,
 				lastName,
 			});
 
-			return;
+			return null;
 		}
 	}
 
@@ -69,6 +69,12 @@ const TodoPage = () => {
 				{data.map((user, index) => (
 					<li className="flex gap-1" key={user._id}>
 						{index + 1}. {user.firstName} {user.lastName}
+						<form method="POST">
+							<input type="hidden" name="id" value={user._id} />
+							<button type="submit" name="_action" value="delete" className="border border-black px-1">
+								x
+							</button>
+						</form>
 					</li>
 				))}
 			</ol>
