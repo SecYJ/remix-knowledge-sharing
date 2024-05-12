@@ -26,19 +26,17 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 	if (intent === "delete") {
 		const { id } = Object.fromEntries(formData);
-		const testing = await axios.delete(`${url}/${id}`);
-
-		console.log("testing", testing);
+		await axios.delete(`${url}/${id}`);
 
 		return null;
 	}
 
-	await axios.post(url, {
-		firstName,
-		lastName,
-	});
-
-	return null;
+	if (intent === "add") {
+		await axios.post(url, {
+			firstName,
+			lastName,
+		});
+	}
 };
 
 const TodoPage = () => {
@@ -53,21 +51,25 @@ const TodoPage = () => {
 					</li>
 				))}
 			</ol>
-			<form method="POST" className="flex gap-3 mt-3">
-				<input
-					type="text"
-					name="firstName"
-					placeholder="First Name"
-					className="border border-black p-1"
-					required
-				/>
-				<input
-					type="text"
-					placeholder="Last Name"
-					name="lastName"
-					className="border border-black p-1"
-					required
-				/>
+			<form method="POST" className="flex gap-3 mt-3 items-start">
+				<div>
+					<input
+						type="text"
+						name="firstName"
+						placeholder="First Name"
+						className="border border-black p-1"
+						required
+					/>
+				</div>
+				<div>
+					<input
+						type="text"
+						placeholder="Last Name"
+						name="lastName"
+						className="border border-black p-1"
+						required
+					/>
+				</div>
 				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
 					Add user
 				</button>
