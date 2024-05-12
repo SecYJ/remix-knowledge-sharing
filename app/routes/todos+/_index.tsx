@@ -1,12 +1,8 @@
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, useLoaderData, useNavigation } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import axios from "axios";
-import TodoItem from "./TodoItem";
-import { cn } from "~/utils/cn";
-import { useEffect, useRef } from "react";
 
 const url = "http://localhost:3000/todos";
-const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 interface Response {
 	data: {
@@ -17,14 +13,12 @@ interface Response {
 }
 
 export const loader = async () => {
-	await wait(Math.floor(Math.random() * 2));
 	const data = await axios.get<Response>(url);
 
 	return json(data.data.data);
 };
 
 export const action = async ({ request }: ActionFunctionArgs) => {
-	await wait(Math.floor(Math.random() * 2));
 	const formData = await request.formData();
 	const firstName = formData.get("firstName");
 	const lastName = formData.get("lastName");
@@ -49,42 +43,35 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 
 const TodoPage = () => {
 	const data = useLoaderData<typeof loader>();
-	const navigation = useNavigation();
-	const formEl = useRef<HTMLFormElement>(null);
-
-	useEffect(() => {
-		if (navigation.state !== "submitting") return;
-		formEl && formEl.current?.reset();
-	}, [navigation.state]);
 
 	return (
 		<div className="p-10">
 			<ol className="pl-4 space-y-2">
 				{data.map((user, index) => (
-					<li
-						className={cn(
-							"flex gap-1",
-							navigation?.formData?.get("id") === user._id ? "text-red-600" : "text-black"
-						)}
-						key={user._id}
-					>
+					<li className="flex gap-1" key={user._id}>
 						{index + 1}. {user.firstName} {user.lastName}
-						<Form method="POST">
-							<input type="hidden" name="id" value={user._id} />
-							<button type="submit" name="_action" value="delete" className="border border-black px-1">
-								x
-							</button>
-						</Form>
 					</li>
 				))}
 			</ol>
-			<Form method="POST" className="flex gap-3 mt-3" ref={formEl}>
-				<input type="text" name="firstName" placeholder="First Name" className="border border-black p-1" />
-				<input type="text" placeholder="Last Name" name="lastName" className="border border-black p-1" />
+			<form method="POST" className="flex gap-3 mt-3">
+				<input
+					type="text"
+					name="firstName"
+					placeholder="First Name"
+					className="border border-black p-1"
+					required
+				/>
+				<input
+					type="text"
+					placeholder="Last Name"
+					name="lastName"
+					className="border border-black p-1"
+					required
+				/>
 				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
 					Add user
 				</button>
-			</Form>
+			</form>
 		</div>
 	);
 };
