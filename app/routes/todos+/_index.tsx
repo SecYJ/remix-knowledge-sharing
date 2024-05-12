@@ -50,6 +50,12 @@ const TodoPage = () => {
 				{data.map((user, index) => (
 					<li className="flex gap-1" key={user._id}>
 						{index + 1}. {user.firstName} {user.lastName}
+						<form method="POST">
+							<input type="hidden" name="id" value={user._id} />
+							<button type="submit" name="_action" value="delete" className="border border-black px-1">
+								x
+							</button>
+						</form>
 					</li>
 				))}
 			</ol>
