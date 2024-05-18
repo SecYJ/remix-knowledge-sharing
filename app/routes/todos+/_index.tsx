@@ -1,16 +1,19 @@
+import { getFormProps, getInputProps, useForm } from "@conform-to/react";
+import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { useActionData, useLoaderData } from "@remix-run/react";
+import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import axios from "axios";
-import { min, required } from "~/validation/validate";
+import Spinner from "~/assets/spinner.svg?react";
+import { schema } from "~/validation/validate";
 
 const url = "http://localhost:3000/todos";
 
 interface Response {
-	data: {
+	data: Array<{
 		firstName: string;
 		lastName: string;
 		_id: string;
-	}[];
+	}>;
 }
 
 export const loader = async () => {
@@ -32,36 +35,41 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 		return null;
 	}
 
-	const errors: Record<string, string[]> = {
-		firstName: [],
-		lastName: [],
-	};
-
 	if (intent === "add") {
-		// NOTE: firstName validation
-		!required(String(firstName)) && errors.firstName.push("First name is required");
-		!min(String(firstName), 3) && errors.firstName.push("Min Length is 3 characters long");
+		const submission = parseWithZod(formData, { schema });
 
-		// NOTE: lastName validation
-		!required(String(lastName)) && errors.lastName.push("Last name is required");
-		!min(String(lastName), 3) && errors.lastName.push("Min Length is 3 characters long");
-
-		if (!Object.values(errors).some((field) => field.length > 0)) {
-			await axios.post(url, {
-				firstName,
-				lastName,
-			});
-
-			return null;
+		if (submission.status !== "success") {
+			return submission.reply({ resetForm: true });
 		}
+
+		await axios.post(url, {
+			firstName,
+			lastName,
+		});
+
+		return null;
 	}
 
-	return json(errors);
+	return null;
 };
 
 const TodoPage = () => {
 	const data = useLoaderData<typeof loader>();
-	const errors = useActionData<typeof action>();
+	const actionData = useActionData<typeof action>();
+	const navigation = useNavigation();
+
+	const isCreatingUser = navigation.state !== "idle" && navigation.formData?.get("_action") === "add";
+
+	const [form, fields] = useForm({
+		constraint: getZodConstraint(schema),
+		lastResult: actionData,
+		shouldValidate: "onSubmit",
+		shouldRevalidate: "onInput",
+		defaultNoValidate: false,
+		onValidate({ formData }) {
+			return parseWithZod(formData, { schema });
+		},
+	});
 
 	return (
 		<div className="p-10">
@@ -69,54 +77,53 @@ const TodoPage = () => {
 				{data.map((user, index) => (
 					<li className="flex gap-1" key={user._id}>
 						{index + 1}. {user.firstName} {user.lastName}
-						<form method="POST">
+						<Form replace method="POST">
 							<input type="hidden" name="id" value={user._id} />
 							<button type="submit" name="_action" value="delete" className="border border-black px-1">
 								x
 							</button>
-						</form>
+						</Form>
 					</li>
 				))}
 			</ol>
-			<form method="POST" className="flex gap-3 mt-3 items-start">
+			<Form method="POST" {...getFormProps(form)} className="flex gap-3 mt-3 items-start">
 				<div>
 					<input
-						type="text"
-						name="firstName"
+						{...getInputProps(fields.firstName, {
+							type: "text",
+						})}
 						placeholder="First Name"
 						className="border border-black p-1"
-						required
-						minLength={3}
 					/>
-					{/* {errors &&
-						errors.firstName.length > 0 &&
-						errors.firstName.map((error) => (
-							<p key={error} className="text-red-600">
-								{error}
-							</p>
-						))} */}
+					{fields.firstName.errors && <p className="text-red-600">{fields.firstName.errors[0]}</p>}
 				</div>
 				<div>
 					<input
-						type="text"
 						placeholder="Last Name"
-						name="lastName"
+						{...getInputProps(fields.lastName, {
+							type: "text",
+						})}
 						className="border border-black p-1"
-						required
-						minLength={3}
 					/>
-					{/* {errors &&
-						errors.lastName.length > 0 &&
-						errors.lastName.map((error) => (
-							<p key={error} className="text-red-600">
-								{error}
-							</p>
-						))} */}
+					{fields.lastName.errors && <p className="text-red-600">{fields.lastName.errors[0]}</p>}
 				</div>
-				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
-					Add user
+				<button
+					type="submit"
+					name="_action"
+					value="add"
+					className="border border-black p-1 rounded flex gap-2"
+					disabled={isCreatingUser}
+				>
+					{isCreatingUser ? (
+						<>
+							<Spinner className="size-6" />
+							<span>Creating User</span>
+						</>
+					) : (
+						<span>Add user</span>
+					)}
 				</button>
-			</form>
+			</Form>
 		</div>
 	);
 };

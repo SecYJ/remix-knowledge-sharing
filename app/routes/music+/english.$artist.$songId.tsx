@@ -7,7 +7,7 @@ export const loader = async () => {
 };
 
 const PlayListPage = () => {
-    throw new Error("lol")
+	// throw new Error("lol")
 	const { songId } = useParams();
 
 	return <div className="text-white grid place-items-center">play list here {songId}</div>;

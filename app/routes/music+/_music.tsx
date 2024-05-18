@@ -11,6 +11,9 @@ const MusicLayout = () => {
 					<li>
 						<Link to="chinese">中文歌</Link>
 					</li>
+					<li>
+						<Link to="/music/english/taylor-swift/i-dont-wanna-live-forever">中文歌</Link>
+					</li>
 				</ul>
 			</div>
 
