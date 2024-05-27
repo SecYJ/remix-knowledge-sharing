@@ -4,10 +4,12 @@ export const loader = async () => {
 	return json({
 		artists: [
 			{
-				name: "Taylor Swift",
+				label: "Taylor Swift",
+				value: "taylor-swift",
 			},
 			{
-				name: "Alan Walker",
+				label: "Alan Walker",
+				value: "alan-walker",
 			},
 		],
 	});
@@ -19,11 +21,11 @@ const ArtistSelectPage = () => {
 	return (
 		<>
 			<nav className="py-10 border-b">
-				<ul className="text-white grid grid-cols-3 gap-4 *:border *:py-2 *:px-4 *:rounded-full *:text-center">
+				<ul className="text-white grid grid-cols-2 gap-4 *:border *:py-2 *:px-4 *:rounded-full *:text-center">
 					{artists.map((artist) => (
-						<li key={artist.name}>
-							<Link to="taylor-swift" prefetch="intent" className="block">
-								{artist.name}
+						<li key={artist.value}>
+							<Link to={artist.value} prefetch="intent" className="block">
+								{artist.label}
 							</Link>
 						</li>
 					))}
