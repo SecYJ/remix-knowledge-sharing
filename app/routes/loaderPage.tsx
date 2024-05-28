@@ -1,5 +1,5 @@
-import { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { useActionData, useLoaderData } from "@remix-run/react";
 
 export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 	request.url;
@@ -14,13 +14,29 @@ export const loader = async ({ request, params }: LoaderFunctionArgs) => {
 		status: 200,
 		headers: {
 			"Content-Type": "application/json",
-			"Set-Cookie": "name=remix; path=/; HttpOnly; SameSite=Strict; Max-Age=31536000; Secure",
+		},
+	});
+};
+
+export const action = async ({ request, params }: ActionFunctionArgs) => {
+	request.url;
+	request.formData;
+	request.headers;
+	request.signal;
+
+	params.id;
+
+	return new Response(null, {
+		status: 302,
+		headers: {
+			Location: "/intro",
 		},
 	});
 };
 
 export default function LoaderPage() {
 	const data = useLoaderData<typeof loader>();
+	const actionData = useActionData<typeof action>();
 
 	return (
 		<div>

@@ -1,8 +1,8 @@
 import { ActionFunctionArgs, json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { cn } from "~/utils/cn";
-import { createUser, deleteUser, getUsers } from "./notes+/misc/queries";
-import Input from "./notes+/ui/Input";
+import { createUser, deleteUser, getUsers } from "./misc/queries";
+import Input from "./ui/Input";
 
 export const loader = async () => {
 	const data = await getUsers();
@@ -14,15 +14,12 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 	const action = formData.get("_action");
 
 	if (action === "delete") {
-		const userId = formData.get("delete") as string;
-		await deleteUser(userId);
-		return null;
+		await deleteUser(formData.get("userId") as string);
 	}
 
-	await createUser({
-		firstName: formData.get("firstName") as string,
-		lastName: formData.get("lastName") as string,
-	});
+	if (action === "add") {
+		await createUser(formData.get("username") as string);
+	}
 
 	return null;
 };
@@ -36,11 +33,11 @@ export default function Index() {
 				{data.map((user, index) => (
 					<li className={cn("flex gap-1")} key={user._id}>
 						<p>
-							{index + 1}. {user.firstName} {user.lastName}
+							{index + 1}. {user.username}
 						</p>
 
 						<form method="POST">
-							<input type="hidden" name="delete" value={user._id} />
+							<input type="hidden" name="userId" value={user._id} />
 
 							<button type="submit" name="_action" value="delete" className="border border-black px-1">
 								x
@@ -50,8 +47,7 @@ export default function Index() {
 				))}
 			</ol>
 			<form method="POST" action="?index" className="flex pl-10 gap-3 mt-3">
-				<Input placeholder="First Name" name="firstName" />
-				<Input placeholder="Last Name" name="lastName" />
+				<Input placeholder="Username" name="username" />
 
 				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
 					Add User

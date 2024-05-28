@@ -21,9 +21,11 @@ const GeneralErrorBoundary = (props: Props) => {
 				</>
 			)}
 
-			<Link to={props.restoreLink ?? "/"} className="py-2 px-4 rounded bg-white">
-				{props.restoreName}
-			</Link>
+			{props.restoreLink && props.restoreName && (
+				<Link to={props.restoreLink ?? "/"} className="py-2 px-4 rounded bg-white">
+					{props.restoreName}
+				</Link>
+			)}
 		</div>
 	);
 };
