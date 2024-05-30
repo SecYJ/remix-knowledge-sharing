@@ -1,7 +1,7 @@
 import { getFormProps, getInputProps, useForm } from "@conform-to/react";
 import { getZodConstraint, parseWithZod } from "@conform-to/zod";
 import { ActionFunctionArgs, json } from "@remix-run/node";
-import { Form, useActionData, useLoaderData } from "@remix-run/react";
+import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { userSchema } from "~/lib/validate";
 import { cn } from "~/utils/cn";
 import { createUser, deleteUser, getUsers } from "./misc/queries";
@@ -28,7 +28,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 	}
 
 	if (action === "add") {
-		await createUser(formData.get("username") as string);
+		await createUser(formData.get("username") as string, request.signal);
 	}
 
 	return json({
@@ -47,6 +47,8 @@ export default function Base() {
 			return parseWithZod(formData, { schema: userSchema });
 		},
 	});
+	const navigation = useNavigation();
+	const isSubmitting = navigation.state !== "idle" && navigation.formData?.get("_action") === "add";
 
 	return (
 		<>
@@ -74,16 +76,16 @@ export default function Base() {
 					errorMsg={fields.username?.errors?.[0]}
 				/>
 
-				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
-					Add User
+				<button
+					type="submit"
+					name="_action"
+					value="add"
+					className="border border-black p-1 disabled:bg-zinc-300 rounded"
+					disabled={isSubmitting}
+				>
+					{isSubmitting ? "Adding..." : "Add user"}
 				</button>
 			</Form>
 		</>
 	);
 }
-
-{
-	/* <li className={cn("flex gap-1", navigation.state !== "idle" && "text-red-600")} key={user._id}> */
-}
-
-// {navigation.state !== "idle" ? "Adding..." : "Add user"}

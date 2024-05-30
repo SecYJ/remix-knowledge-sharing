@@ -6,13 +6,24 @@ export const deleteUser = async (id: string) => {
 };
 
 export const createUser = async (username: string, signal?: AbortSignal) => {
-	await axiosInstance.post(
-		"/notes",
-		{
-			username,
+	// await axiosInstance.post(
+	// 	"/notes",
+	// 	{
+	// 		username,
+	// 	},
+	// 	{ signal }
+	// );
+
+	await fetch("https://remix-knowledge-sharing-backend.onrender.com/notes", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
 		},
-		{ signal }
-	);
+		body: JSON.stringify({
+			username,
+		}),
+		signal,
+	});
 };
 
 export const getUsers = async () => {

@@ -12,5 +12,5 @@ export const userSchema = z.object({
 			required_error: "First Name is required",
 		})
 		.min(3)
-		.max(10),
+		.max(20),
 });

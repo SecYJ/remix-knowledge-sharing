@@ -3,7 +3,6 @@ import { useActionData, useLoaderData } from "@remix-run/react";
 import { max, min, required } from "~/lib/validate";
 import { cn } from "~/utils/cn";
 import { createUser, deleteUser, getUsers } from "./misc/queries";
-import { useHydrated } from "./misc/useHydrated";
 import Input from "./ui/Input";
 
 export const loader = async () => {
@@ -29,7 +28,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 	if (min(username, 3)) {
 		errors.push("Must be at least 3 characters");
 	}
-	if (max(username, 10)) {
+	if (max(username, 20)) {
 		errors.push("Max 10 characters");
 	}
 	if (Object.values(errors).some((error) => error.length > 0)) {
@@ -56,7 +55,8 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 export default function Base() {
 	const data = useLoaderData<typeof loader>();
 	const actionData = useActionData<typeof action>();
-	const isHydrated = useHydrated();
+	// const navigation = useNavigation()
+	// const isSubmitting = navigation.state !== "idle" && navigation.formData?.get("_action") === "add";
 
 	const usernameError = actionData?.status === "failed" ? actionData.errors[0] : undefined;
 
@@ -79,26 +79,21 @@ export default function Base() {
 					</li>
 				))}
 			</ol>
-			<form method="POST" noValidate={isHydrated} action="?index" className="flex pl-10 items-start gap-3 mt-3">
+			<form method="POST" className="flex pl-10 items-start gap-3 mt-3">
 				<Input
 					placeholder="Username"
 					name="username"
 					required
-					minLength={3}
-					maxLength={10}
+					minLength={2}
+					maxLength={20}
 					errorMsg={usernameError}
 				/>
 
 				<button type="submit" name="_action" value="add" className="border border-black p-1 rounded">
+					{/* {navigation.state !== "idle" ? "Adding..." : "Add user"} */}
 					Add User
 				</button>
 			</form>
 		</>
 	);
 }
-
-{
-	/* <li className={cn("flex gap-1", navigation.state !== "idle" && "text-red-600")} key={user._id}> */
-}
-
-// {navigation.state !== "idle" ? "Adding..." : "Add user"}
