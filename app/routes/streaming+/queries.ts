@@ -21,11 +21,11 @@ export interface MovieApiResponse {
 	}[];
 }
 
-export const getMovies = async () => {
-	await new Promise((resolve) => setTimeout(resolve, 3000));
+export const getMovies = async (variant: "slow" | "fast" = "fast") => {
+	await new Promise((resolve) => setTimeout(resolve, variant === "slow" ? 3000 : 0));
 	const data = await infinite.get<MovieApiResponse>("/trending/movie/day", {
 		params: {
-			page: 1,
+			page: variant === "slow" ? 2 : 1,
 		},
 	});
 

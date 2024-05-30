@@ -1,28 +1,38 @@
-import { json, useLoaderData } from "@remix-run/react";
+import { Await, json, useLoaderData } from "@remix-run/react";
+import { Suspense } from "react";
 import { getMovies } from "./queries";
-import MovieItem from "./ui/MovieItem";
+import { MovieItem, Skeleton, Wrapper } from "./ui";
 
 export const loader = async () => {
-	const data = await getMovies();
+	const [lowPriorityContent, highPriorityContent] = await Promise.all([getMovies("slow"), getMovies()]);
 
 	return json({
-		title: "Streaming",
-		data,
+		highPriorityContent,
+		lowPriorityContent,
 	});
 };
 
 const StreamingPage = () => {
-	const { title, data } = useLoaderData<typeof loader>();
+	const { highPriorityContent, lowPriorityContent } = useLoaderData<typeof loader>();
 
 	return (
-		<div className="container mx-auto">
-			<div className="text-5xl text-center my-10">{title}</div>
-			<ul className="grid grid-cols-3 gap-4">
-				{data.results.map((movie) => (
-					<MovieItem key={movie.id} movie={movie} />
-				))}
-			</ul>
-		</div>
+		<>
+			<Wrapper priority="high">
+				<Suspense fallback={<Skeleton count={20} />}>
+					<Await resolve={highPriorityContent}>
+						{(movies) => movies.results.map((movie) => <MovieItem movie={movie} key={movie.id} />)}
+					</Await>
+				</Suspense>
+			</Wrapper>
+
+			<Wrapper priority="low">
+				<Suspense fallback={<Skeleton count={20} />}>
+					<Await resolve={lowPriorityContent}>
+						{(movies) => movies.results.map((movie) => <MovieItem movie={movie} key={movie.id} />)}
+					</Await>
+				</Suspense>
+			</Wrapper>
+		</>
 	);
 };
 
